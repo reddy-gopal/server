@@ -24,7 +24,7 @@ class Alert(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     def __str__(self):
         try:
-            return f"{self.server.name} - {self.severity}"
+            return f"{self.server_id} - {self.severity}"
         except Exception:
             return f"Alert ({self.severity})"
 
@@ -36,7 +36,7 @@ class ResourceUsage(models.Model):
     disk_usage_percent = models.DecimalField(max_digits=5, decimal_places=2)
     app_usage_percent = models.DecimalField(max_digits=5, decimal_places=2)
     def __str__(self):
-        return f"{self.server.name} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+        return f"{self.server_id.name} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
 
 class NetworkTraffic(models.Model):
     server_id = models.ForeignKey(Server, on_delete=models.CASCADE)
@@ -44,5 +44,5 @@ class NetworkTraffic(models.Model):
     incoming_traffic_mb = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f"{self.server} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')} - {self.incoming_traffic_mb} MB"
+        return f"{self.server_id} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')} - {self.incoming_traffic_mb} MB"
     
