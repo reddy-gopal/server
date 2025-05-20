@@ -123,7 +123,7 @@ def traffic_data(request, server_id):
 
     startDate = request.GET.get("start")
     endDate = request.GET.get("end")
-    Network = list(NetworkTraffic.objects.filter(server_id = server_id, timestamp__gt = startDate, timestamp__lt = endDate).group_by('-timestamp'))
+    Network = list(NetworkTraffic.objects.filter(server_id = server_id, timestamp__gt = startDate, timestamp__lt = endDate).order_by('-timestamp'))
     data = []
     for source in Network:
         data.append({
