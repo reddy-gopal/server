@@ -17,8 +17,11 @@ def server_summary(request, server_id):
         return Response({
             "message": "Server id is Required.."
         }, status=400)
-
-   
+    server =  Server.objects.filter(id=server_id)
+    if not server.exists():
+        return Response({
+            "message": f"No server found with ID {server_id}."
+        }, status=404)
 
     alert_counts = Alert.objects.filter(server_id=server_id).values('severity').annotate(count=Count('severity'))
     summary = {"critical": 0, "medium": 0, "low": 0}
@@ -53,6 +56,12 @@ def server_usage(request, server_id):
         return Response({
             "message": "Server id is Required.."
     }, status=400)
+    server =  Server.objects.filter(id=server_id)
+
+    if not server.exists():
+        return Response({
+            "message": f"No server found with ID {server_id}."
+        }, status=404)
 
     Usage = list(ResourceUsage.objects.filter(server_id = server_id).order_by('-timestamp'))[0]
     data2 = []
@@ -72,6 +81,12 @@ def server_usage_time(request, server_id):
         return Response({
             "message": "Server id is Required.."
     }, status=400)
+    server =  Server.objects.filter(id=server_id)
+
+    if not server.exists():
+        return Response({
+            "message": f"No server found with ID {server_id}."
+        }, status=404)
     startDate = request.GET.get("start")
     endDate = request.GET.get("end")
     if not startDate or not endDate:
@@ -98,6 +113,12 @@ def traffic_data(request, server_id):
         return Response({
             "message": "Server id is Required.."
         }, status=400)
+    server =  Server.objects.filter(id=server_id)
+
+    if not server.exists():
+        return Response({
+            "message": f"No server found with ID {server_id}."
+        }, status=404)
 
 
     startDate = request.GET.get("start")
@@ -138,6 +159,12 @@ def update_server(request, server_id):
         return Response({
             "message": "server id is required for deletion.."
         }, status=400)
+    server =  Server.objects.filter(id=server_id)
+
+    if not server.exists():
+        return Response({
+            "message": f"No server found with ID {server_id}."
+        }, status=404)
   
     server = Server.objects.get(id=server_id)
     data = request.data
@@ -158,7 +185,13 @@ def delete_server(request, server_id):
         return Response({
             "message": "server id is required for deletion.."
         }, status=400)
-    server = Server.objects.get(id = server_id)
+    server =  Server.objects.filter(id=server_id)
+
+    if not server.exists():
+        return Response({
+            "message": f"No server found with ID {server_id}."
+        }, status=404)
+   
     server.delete()
     return Response({
         "message": f"Server {server.name} is deleted Successfully..."
@@ -169,6 +202,7 @@ def delete_server(request, server_id):
 def add_alert(request):
     data = request.data
     server_id = data.get("server_id")
+    
     server = Server.objects.get(pk = server_id)
     alert = Alert.objects.create(
         server_id = server,

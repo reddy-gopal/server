@@ -8,7 +8,7 @@ urlpatterns = [
     path("server/<int:server_id>/use/", server_usage_time),
     path("servers/<int:server_id>/network_traffic/", traffic_data),
     path("server/create/", create_server),
-    path("server/update", update_server),
+    path("server/update/", update_server),
     path("", home),
-    path("add/alert", add_alert)
+    path("add/alert/", add_alert)
 ]
