@@ -13,7 +13,7 @@ class Server(models.Model):
 
 
 class Alert(models.Model):
-    server = models.ForeignKey(Server, on_delete=models.CASCADE)
+    server_id = models.ForeignKey(Server, on_delete=models.CASCADE)
     SEVERITY_LEVEL = [
      ("low", "Low"),
     ("medium", "Medium"),
@@ -29,7 +29,7 @@ class Alert(models.Model):
             return f"Alert ({self.severity})"
 
 class ResourceUsage(models.Model):
-    server = models.ForeignKey(Server, on_delete=models.CASCADE)
+    server_id = models.ForeignKey(Server, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(null=False) 
     cpu_usage_percent = models.DecimalField(max_digits=5, decimal_places=2)
     ram_usage_percent = models.DecimalField(max_digits=5, decimal_places=2)
@@ -39,7 +39,7 @@ class ResourceUsage(models.Model):
         return f"{self.server.name} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
 
 class NetworkTraffic(models.Model):
-    server = models.ForeignKey(Server, on_delete=models.CASCADE)
+    server_id = models.ForeignKey(Server, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(null=False)  
     incoming_traffic_mb = models.DecimalField(max_digits=10, decimal_places=2)
 
