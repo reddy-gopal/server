@@ -1,17 +1,87 @@
-from rest_framework.decorators import api_view, authentication_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from django.db.models import Count
 from .models import Alert, Server, ResourceUsage, NetworkTraffic
 from django.http import HttpResponse
-from oauth2_provider.contrib.rest_framework import OAuth2Authentication
-
-
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.conf import settings
+from .serializers import UserSerializer
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 @api_view(["GET"])
+@permission_classes([AllowAny])
+
 def home(request):
     return HttpResponse("Welcome to Home Page")
 
+# views.py
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        
+        if response.status_code == 200:
+            access_token = response.data['access']
+            refresh_token = response.data['refresh']
+
+            # Determine if in development
+            secure_setting = not settings.DEBUG  # Secure=True in production
+            
+            response.set_cookie(
+                key='access_token',
+                value=access_token,
+                httponly=True,
+                secure=secure_setting,
+                samesite='Lax'
+            )
+            response.set_cookie(
+                key='refresh_token',
+                value=refresh_token,
+                httponly=True,
+                secure=secure_setting,
+                samesite='Lax'
+            )
+            
+        return response
+class CustomTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get('refresh_token')
+        if not refresh_token:
+            return Response({'error': 'Refresh token missing'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        request.data['refresh'] = refresh_token
+ 
+  
+        return super().post(request, *args, **kwargs)
+    
+
+
+@permission_classes([AllowAny])
+class RegisterView(APIView):
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LogoutView(APIView):
+    def post(self, request):
+        response = Response({'message': 'Logged out successfully'})
+        
+        # Clear cookies
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        
+        return response
+
 @api_view(["GET"])
-@authentication_classes([OAuth2Authentication])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def server_summary(request, server_id):
     if not server_id:
         return Response({
@@ -33,6 +103,8 @@ def server_summary(request, server_id):
     return Response(summary)
 
 @api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated]) 
 def server_list(request):
     servers = list(Server.objects.all())
     data = []
@@ -49,8 +121,8 @@ def server_list(request):
     return Response(data)
 
 @api_view(["GET"])
-@authentication_classes([OAuth2Authentication])
-
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def server_usage(request, server_id):
     if not server_id:
         return Response({
@@ -76,6 +148,8 @@ def server_usage(request, server_id):
     })
     return Response(data2)
 @api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated]) 
 def server_usage_time(request, server_id):
     if not server_id:
         return Response({
@@ -106,7 +180,12 @@ def server_usage_time(request, server_id):
              "app": source.app_usage_percent
         })
     return Response(data, status=200)
+class ProtectedView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        return Response({'message': f'Hello {request.user.username}!'})
 @api_view(["GET"])
 def traffic_data(request, server_id):
     if not server_id:
@@ -135,7 +214,7 @@ def traffic_data(request, server_id):
 
 
 @api_view(["POST"])
-@authentication_classes([OAuth2Authentication])
+@authentication_classes([JWTAuthentication])
 
 def create_server(request):
     data = request.data
@@ -152,7 +231,7 @@ def create_server(request):
 
 
 @api_view(["PUT"])
-@authentication_classes([OAuth2Authentication])
+@authentication_classes([JWTAuthentication])
 
 def update_server(request, server_id):
     if not server_id:
@@ -178,7 +257,7 @@ def update_server(request, server_id):
     return Response({"message": "Server updated"})
 
 @api_view(["DELETE"])
-@authentication_classes([OAuth2Authentication])
+@authentication_classes([JWTAuthentication])
 
 def delete_server(request, server_id):
     if not server_id:
@@ -198,7 +277,7 @@ def delete_server(request, server_id):
     }, status=200)
 
 @api_view(["POST"])
-@authentication_classes([OAuth2Authentication])
+@authentication_classes([JWTAuthentication])
 def add_alert(request):
     data = request.data
     server_id = data.get("server_id")

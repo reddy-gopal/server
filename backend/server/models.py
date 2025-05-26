@@ -23,10 +23,9 @@ class Alert(models.Model):
     message = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
     def __str__(self):
-        try:
-            return f"{self.server_id} - {self.severity}"
-        except Exception:
-            return f"Alert ({self.severity})"
+       return f"{self.server_id} - {self.severity}"
+        
+          
 
 class ResourceUsage(models.Model):
     server_id = models.ForeignKey(Server, on_delete=models.CASCADE)
