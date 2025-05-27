@@ -22,7 +22,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const refresh = localStorage.getItem('refresh');
-        const response = await axios.post('http://localhost:8000/api/token/refresh/', {
+        const response = await axios.post('https://gopal955.pythonanywhere.com/api/token/refresh/', {
           refresh,
         });
 
