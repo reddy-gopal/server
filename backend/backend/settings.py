@@ -151,13 +151,10 @@ REST_FRAMEWORK = {
     )
 }
 OAUTH2_PROVIDER = {
-    # this is the list of available scopes
+   
     'SCOPES': {'read': 'Read scope', 'write': 'Write scope'}
 }
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",
-]
-CORS_ALLOW_CREDENTIALS = True  # Mandatory for cookies
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000",]
+
+CORS_ALLOW_CREDENTIALS = True  
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5175", "http://127.0.0.1:5175", "http://localhost:3000",]
+CORS_ALLOW_ALL_ORIGINS = True
